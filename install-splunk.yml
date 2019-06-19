@@ -1,0 +1,39 @@
+---
+- hosts: splunkforwarders
+
+  tasks:
+  # Copy the Splunk Forwarder rpm to the remote server in /
+  - copy:
+          src: /installers/splunk/splunkforwarder-7.3.0-657388c7a488-linux-2.6-x86_64.rpm
+          dest: /
+
+  # Install the RPM. We need to disable GPG checks because the RPM is cached locally and it will fail signature checks if we don't
+  - zypper:
+          name: '/splunkforwarder-7.3.0-657388c7a488-linux-2.6-x86_64.rpm'
+          state: present
+          disable_gpg_check: yes
+
+  # Splunk have removed the default admin user so we copy across user-seed.conf which sets admin:changeme.  Hashed on restart
+  - copy:
+          src: /user-seed.conf
+          dest: /opt/splunkforwarder/etc/system/local/
+          owner: splunk
+          group: splunk
+  # Doesnt work on SLES 15
+  #- name: 'Enable boot-start as the Splunk user'
+  #  command: /opt/splunkforwarder/bin/splunk enable boot-start -user splunk --accept-license --answer-yes --auto-ports --no-prompt
+
+  - name: 'Set deployment server'
+    command: /opt/splunkforwarder/bin/splunk set deploy-poll ansible-client:8089 -auth admin:changeme --accept-license --answer-yes --auto-ports --no-prompt
+    become: yes
+    become_user: splunk
+
+  - name: 'Restart Splunk and we are done'
+    command: /opt/splunkforwarder/bin/splunk restart
+    become: yes
+    become_user: splunk
+
+  - name: 'Delete the intall RPM'
+    file:
+            state: absent
+            path: /splunkforwarder-7.3.0-657388c7a488-linux-2.6-x86_64.rpm
