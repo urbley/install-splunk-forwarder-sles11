@@ -1,7 +1,5 @@
 ---
-- hosts: Linux
-
-  tasks:
+- tasks:
   # Copy the Splunk Forwarder rpm to the remote server in /
   - copy:
           src: /installers/splunk/splunkforwarder-7.3.0-657388c7a488-linux-2.6-x86_64.rpm
