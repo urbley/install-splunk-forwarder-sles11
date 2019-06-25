@@ -1,5 +1,5 @@
 ---
-- hosts: splunkforwarders
+- hosts: Linux
 
   tasks:
   # Copy the Splunk Forwarder rpm to the remote server in /
